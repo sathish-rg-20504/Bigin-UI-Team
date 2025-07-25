@@ -123,7 +123,4 @@ const uxIconsHTML = `
             </symbol> 
         </svg>
 </div>
-
-
-
 `;
