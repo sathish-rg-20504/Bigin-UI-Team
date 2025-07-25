@@ -4,191 +4,98 @@
 <head>
     <meta charset="UTF-8">
     <title>SVG Symbol Ref Generator with Preview</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 0;
-            margin: 0;
-        }
-
-        .p20 {
-            padding: 2rem;
-        }
-
-        .mb10 {
-            margin-bottom: 1rem;
-        }
-
-        .page-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .drop-area {
-            border: 2px dashed #dce3ea;
-            background-color: #f9fbfc;
-            padding: 2rem;
-            text-align: center;
-            color: #666;
-            margin-bottom: 4rem;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        textarea {
-            width: 100%;
-            height: 220px;
-            font-family: monospace;
-            margin-top: 1rem;
-            white-space: pre;
-        }
-
-        .preview {
-            margin-top: 4rem;
-        }
-
-        .preview svg {
-            width: 100px;
-            height: 100px;
-        }
-
-        .svg-ouput {
-            border: 1px solid #bdc8d3;
-            border-radius: 6px;
-            padding: 13px;
-            width: 98%;
-        }
-
-        .copy-to-clipboard {
-            background: #eff2f5;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="./styles/icons.css">
+    <link rel="stylesheet" type="text/css" href="./styles/base.css">
+    <link rel="stylesheet" type="text/css" href="./styles/new-svg.css">
+    <script src="icons/ux-icons-holder.js"></script>
+    <script src="pages/svg-code-generator.js"></script>
 </head>
-
 <body>
-    <div class="p20">
-        <div class="page-title mb10">SVG Code Generator with Preview</div>
-        <div style="display: flex; flex-direction: column;">
-            <div class="drop-area" id="drop-area">
-                <p>Drag & drop an SVG file here, or click to upload</p>
-                <input type="file" id="file-input" accept=".svg" style="display: none;" />
-            </div>
+    <div id="svg-container"></div>
+    <div id="svg-code-generator"></div>
+<div class="icons-list-parent-wrapper flex">
 
-            <div style="display: flex; flex-direction: column;position: relative;">
-                <div style="display: flex;justify-content: space-between;align-items: center;">
-                    <div style="font-weight: 600;">Generated Code:</div>
-                    <div id="copyToClipboard" style="display: none;" class="copy-to-clipboard">Copy</div>
-                </div>
-                <textarea class="svg-ouput" id="output" readonly></textarea>
-            </div>
-
-            <div class="preview" id="preview-container" style="display: none;">
-                <strong>Live Preview:</strong><br />
-                <svg style="margin-top: 1rem;" id="symbol-preview">
-                    <use href=""></use>
-                </svg>
-            </div>
+    <div class="helpdoc-propeties-sec flexcolumn p20 pT15">
+        <div class="m0 icon-title mB10">Icons</div>
+        <div class="flexcolumnchild">
+            <ul id="iconsCategory" class="helpdoc-icon-list flexDirColumn">
+                <!-- <% iconsCategory.forEach(function(icon) {%>
+                    <li class="left-sec-btn-categ {{if(selectedCategory === icon.api_name, 'categ-active')}}"
+                        onclick="{{action ('changeIconCategory', icon)}}">
+                        <span class="helpdoc-icon-name">{{icon.name}}</span>
+                    </li>
+                    <% }) %> -->
+            </ul>
         </div>
-
-        <script>
-            const dropArea = document.getElementById('drop-area');
-            const fileInput = document.getElementById('file-input');
-            const output = document.getElementById('output');
-            const preview = document.getElementById('symbol-preview');
-            const copyToClipboard = document.getElementById('copyToClipboard');
-            const previewUse = preview.querySelector('use');
-
-            dropArea.addEventListener('click', () => fileInput.click());
-
-            dropArea.addEventListener('dragover', e => {
-                e.preventDefault();
-                dropArea.style.borderColor = 'blue';
-            });
-
-            dropArea.addEventListener('dragleave', () => {
-                dropArea.style.borderColor = '#999';
-            });
-
-            dropArea.addEventListener('drop', e => {
-                e.preventDefault();
-                dropArea.style.borderColor = '#999';
-                const file = e.dataTransfer.files[0];
-                if (file && file.type === 'image/svg+xml') {
-                    processSVG(file);
-                }
-            });
-
-            fileInput.addEventListener('change', e => {
-                const file = e.target.files[0];
-                if (file && file.type === 'image/svg+xml') {
-                    processSVG(file);
-                }
-            });
-
-            copyToClipboard.addEventListener('click', () => {
-                navigator.clipboard.writeText(document.getElementById('output').value).then(() => {
-                    alert('Code copied to clipboard!');
-                })
-            });
-
-            function processSVG(file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const svgText = reader.result;
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(svgText, 'image/svg+xml');
-                    const svg = doc.querySelector('svg');
-                    if (!svg) return alert('Invalid SVG');
-
-                    const viewBox = svg.getAttribute('viewBox') || '0 0 24 24';
-                    const idBase = file.name.replace(/\.svg$/i, '').replace(/\W+/g, '_');
-
-                    const gId = `${idBase}_ref`;
-                    const symbolId = `${idBase}`;
-
-                    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                    g.setAttribute("id", gId);
-                    g.setAttribute("fill", 'none');
-                    g.innerHTML = svg.innerHTML;
-
-                    const serializer = new XMLSerializer();
-                    var gCode = serializer.serializeToString(g);
-
-                    // ❌ Remove any xmlns="http://www.w3.org/2000/svg"
-                    gCode = gCode.replace(/\s+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/g, '');
-
-                    const symbolCode = `
-<symbol viewBox="${viewBox}" id="${symbolId}">
-    <use href="#${gId}"></use>
-</symbol>`.trim();
-
-                    output.value = `${gCode}\n\n${symbolCode}\n\n`;
-
-                    // Clear existing svgContainer if any
-                    let svgContainer = document.getElementById('defs-container');
-                    if (svgContainer) {
-                        svgContainer.remove();
-                    }
-
-                    // Inject <g> and <symbol> for preview
-                    svgContainer = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                    svgContainer.setAttribute("style", "display: none;");
-                    svgContainer.setAttribute("id", "defs-container");
-                    svgContainer.innerHTML = `${gCode}\n${symbolCode}`;
-                    document.body.appendChild(svgContainer);
-
-                    preview.setAttribute("viewBox", viewBox);
-                    previewUse.setAttribute("href", `#${symbolId}`);
-                    document.querySelector('#preview-container').style.display = 'block';
-                    document.querySelector('#copyToClipboard').style.display = 'block';
-                };
-                reader.readAsText(file);
-            }
-        </script>
     </div>
+    <div class="icon-list-wrapper p20 pT15">
+        <div class="helpdoc-icon-category">
+            <!-- <% iconsCategory.forEach(function(icon) {%> 
+                <div class="mB50">
+                    <div id="{{icon.api_name}}" class="helpdoc-icon-name pB12 headM">{{icon.name}}</div>
+                    <div class="flex">
+                        <% icon.icons.forEach(function(list) {%>. -->
+                            <div class="helpdoc-icon-item cP {{if(selectedIcon && selectedIcon.iconName === list.iconName, 'active')}}">
+                                 <svg class="svg-icons {{iconClass}}">
+                                    <use href="#ZB_Empty_Feeds"></use>
+                                </svg>
+                                
+                                
+                            </div>
+                            <div class="helpdoc-icon-item cP {{if(selectedIcon && selectedIcon.iconName === list.iconName, 'active')}}">
+                                 <svg class="svg-icons {{iconClass}}">
+                                    <use href="#ZB_Empty_Records"></use>
+                                </svg>
+                            </div>
+                            <!-- <ux-icons icon-name="{{list.iconName}}"
+                                icon-class="{{if(list.iconClass, list.iconClass, 'zb30')}}"></ux-icons> -->
+                            <!--<% }) %>
+                    </div>
+                </div>
+                 <% }) %> -->
+        </div>
+    </div>
+    <div class="icon-detail-wrapper  p20 pT15 flexDirColumn" lyte-if="{{selectedIcon}}">
+        <ux-icons icon-name="ZB_Close" icon-class="zb10 pA r20 cP t20"
+            onclick="{{action('closeIconPreview')}}"></ux-icons>
+        <div class="pB40 headM">Data</div>
+        <div class="helpdoc-icon-item preview mB40">
+            <ux-icons icon-name="{{selectedIcon.iconName}}" icon-class="{{if(selectedIcon.iconClass, selectedIcon.iconClass, 'zb60')}}"></ux-icons>
+        </div>
+        <div class="helpdoc-icon-name mB40">
+            <span class="headS pB20 mR5">Icon Name:</span>    
+            {{selectedIcon.iconName}}
+        </div>
+        <pre class="code-snippet">
+            <div class="flex-center-v mB8">  
+                <span class="taskbar"> 
+                    <span class="barOne bar"></span>
+                    <span class="barTwo bar"></span>
+                    <span class="barThree bar"></span>
+                </span> 
+                <span class="mLauto mR5 icon-hover-dark-parent cP" lt-prop-title="Copy" onclick="{{action('copySampleDataCode')}}">  
+                    <ux-icons icon-name="ZB_Copy" icon-class="zb16 hd-copy-codesnip-icon icon-hover-dark"></ux-icons>
+                    <!-- <i class="bigin-sprite icon-copy-sm icon-copy-sm-mask hd-copy-codesnip-icon icon-hover-dark"></i> -->
+                </span>
+            </div>
+            <code id="dataSecCodeSnippet">
+                <span class="token punctuation">&lt;</span>
+                <span class="token tag">ux-icons</span> 
+                <span class="token attrname">icon-name =</span>
+                <span class="token punctuation">"</span>
+                <span class="token attrvalue">{{selectedIcon.iconName}}</span>
+                <span class="token punctuation">"</span>
+                <span class="token punctuation">&lt;/</span>
+                <span class="token tag">ux-icons</span>
+                <span class="token punctuation">&gt;</span>
+            </code>
+        </pre>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById('svg-container').innerHTML = uxIconsHTML;
+</script>
 </body>
 </html>

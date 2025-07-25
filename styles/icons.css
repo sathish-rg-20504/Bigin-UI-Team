@@ -1,0 +1,56 @@
+.icons-list-wrapper {
+    width: 100%;
+    display: flex;
+}
+.helpdoc-propeties-sec{
+    width: 20%;
+    height: 100%;
+    background: #F9FBFC;  
+    border-right: 1px solid #dce1e6; 
+}
+
+.helpdoc-icon-item {
+    height: 85px;
+    width: 85px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    margin-left: 10px;
+    border-radius: 6px;
+    transition: .2s all;
+    border: 1px solid transparent;
+    background-color: #f6f9fb;
+
+}
+.helpdoc-icon-item:not(.preview):hover,
+.helpdoc-icon-item.active {
+    background: #fff;
+    box-shadow: 0 0 5px 2px #16b38725;
+    border: 1px solid #16b387;
+}
+.helpdoc-icon-item.preview {
+    width: 150px;
+    height: 150px;
+}
+.icon-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+.icon-list-wrapper {
+    width: 50%;
+    border-right: 1px solid #dce1e6;
+    overflow: auto;
+    -webkit-box-flex: 1;
+    -webkit-flex-grow: 1;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+}
+.icon-detail-wrapper {
+    width: 30%;
+    position: relative;
+}
+.icons-list-parent-wrapper {
+    width: 100%;
+    height: 100%;
+}
