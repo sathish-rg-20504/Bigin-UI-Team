@@ -1,0 +1,36 @@
+name: Deploy Icons to Public Repo
+
+on:
+  push:
+    paths:
+      - 'icons/**'
+      - 'scripts/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install & build
+        run: |
+          npm install
+          npm run build
+
+      - name: Sync to public repo
+        env:
+          TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          git clone https://x-access-token:${TOKEN}@github.com/YOUR_ORG/public-icons.git out
+          cp dist/icons.json out/icons.json
+          cd out
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add icons.json
+          git commit -m "Update icons from private repo" || echo "No changes"
+          git push
