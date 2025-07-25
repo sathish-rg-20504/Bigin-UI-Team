@@ -124,7 +124,7 @@ const uxIconsHTML = `
         </svg>
 </div>
 
-s
+sathiz
 
 
 `;
